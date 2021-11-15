@@ -98,13 +98,21 @@ end
 --[=[
     Indexes object in all the player's objects that will be cleaned
 
-    @function AddAllP
+    @function AddAll
     @within PlayerMaid
     @param player any -- The player that will be in charge of cleaning   
  @param object any -- The object that will be cleaned
 ]=]
 function PlayerMaid:AddAll(obj: any)
 					
+end
+					
+function PlayerMaid:Remove(player: any, obj: any)
+						
+end
+
+function PlayerMaid:RemoveAll(obj: any)
+						
 end
 
 --[=[
