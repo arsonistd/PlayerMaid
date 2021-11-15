@@ -1,1 +1,29 @@
+title = "MyProjectName"  # From Git
+gitRepoUrl = "https://github.com/UpliftGames/moonwave" # From Git
+
 gitSourceBranch = "main"
+changelog = true
+classOrder = []
+
+[docusaurus]
+onBrokenLinks = "throw"
+onBrokenMarkdownLinks = "warn"
+favicon = ""
+
+# From git:
+organizationName = "ArsonistD"
+projectName = "PlayerMaid"
+url = "https://AuthorName.github.io"
+baseUrl = "/MyProjectName"
+tagline = "Your project's tagline"
+
+[navbar]
+hideableSidebar = true
+
+[footer]
+style = "dark"
+
+[footer.links]
+title = ""
+copyright = "Copyright © 2021 ArsonistD. Built with Moonwave and Docusaurus"
+
