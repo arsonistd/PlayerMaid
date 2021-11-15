@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[779],{97868:function(s){s.exports=JSON.parse('{"sourceUrl":"https://github.com/arsonistd/PlayerMaid/blob/master","baseUrl":"/PlayerMaid/","classOrder":[],"apiCategories":[]}')}}]);
