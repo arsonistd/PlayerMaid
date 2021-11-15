@@ -29,7 +29,8 @@ function PlayerMaid.new()
         self._players[player.UserId] = {}
     end)
     self._playerRemovingConnection = Players.PlayerRemoving:Connect(function(player)
-        self:_cleanPlayer(player.UserId)
+        self:CleanPlayer(player.UserId)
+        self._players[player.UserId] = nil
     end)
 
     return self
