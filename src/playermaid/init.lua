@@ -15,6 +15,26 @@ local PlayerMaid = {}
 PlayerMaid.__index = PlayerMaid
 
 
+local CleaningMethods = {
+	["function"] = function(funct)
+		funct()
+	end);
+	["Instance"] = function(object)
+		object:Destroy()
+	end);
+	["RBXScriptConnection"] = function(connection)
+		connection:Disconnect()
+	end);
+	["table"] = function(table)
+		for i,v ipairs({"Destroy", "destroy", "disconnect"}) do
+			if table[v] then
+				table[v](table)
+			end
+		end
+	end);
+}
+
+
 --[=[
     Creates a PlayerMaid object.
 
@@ -48,7 +68,9 @@ function PlayerMaid.new(syntax)
 			self.GiveTask = self.Add
 			self.DoCleaning = self.Clean
 			self.DoCleaningPlayer = self.CleanPlayer
+			self.Remove = self.Remove
 		elseif string.lower(syntax) == "janitor" then
+			self.Add = self.Add
 			self.Cleanup = self.Clean
 			self.CleanupPlayer = self.CleanPlayer
 		elseif string.lower(syntax) == "dumpster" then
@@ -62,6 +84,7 @@ function PlayerMaid.new(syntax)
 
 	return self
 end
+
 
 --[=[
     Sets a callback function that will be fired when a player joins
@@ -82,38 +105,32 @@ end
     @within PlayerMaid
     @param player any -- The player that will be in charge of cleaning
     @param object any -- The object that will be cleaned
+	@return index number -- The index of the object
 ]=]
 function PlayerMaid:Add(player: any, obj: any)
 	assert(player ~= nil, "Argument 1 is missing or nil")
 	assert(obj ~= nil, "Argument 2 is missing or nil")
 
 	if obj then
-		print(self._players)
 		local playerContainer = self._players[player.UserId]
 		local index = #playerContainer+1
-		self._players[player.UserId][index] = obj
+		self._players[player.UserId][index] = CleaningMethods[typeof(obj)]
+		return index
 	end
 end
 
+
 --[=[
-    Indexes object in all the player's objects that will be cleaned
-
-    @function AddAll
-    @within PlayerMaid
-    @param player any -- The player that will be in charge of cleaning   
- @param object any -- The object that will be cleaned
-]=]
-function PlayerMaid:AddAll(obj: any)
-					
-end
-					
-function PlayerMaid:Remove(player: any, obj: any)
+	Cleans specific index in the player's 
+				
+	@function Remove
+	@within PlayerMaid
+	@param object any -- The object that will be cleaned on all players
+]=]--
+function PlayerMaid:Remove(player: any, index)
 						
 end
 
-function PlayerMaid:RemoveAll(obj: any)
-						
-end
 
 --[=[
     Cleans up all the objects on every player, Does not disconnect player adding/removing signals.
@@ -139,29 +156,11 @@ end
 function PlayerMaid:CleanPlayer(userId)
 	local playerObjs = self._players[userId]
 
-
-	-- Clean connections
-	for _, obj in pairs(playerObjs) do
-		if typeof(obj) == "RBXScriptConnection" then
-			obj:Disconnect()
-			playerObjs[_] = nil
-		end
-	end
-
-	-- Fire functions that are indexed
-	for _, obj in pairs(playerObjs) do
-		if type(obj) == "function" then -- If object is a function then call it
-			obj()
-			playerObjs[_] = nil
-		end
-	end
-
-	-- Destroy objs that are indexed
-	for _, obj in pairs(playerObjs) do
-		if obj.Destroy then -- If obj has a destroy method then Destroy()
-			task:Destroy()
-			playerObjs[_] = nil
-		end
+	local object, clean = next(playerObjs)
+	while object ~= nil do
+		CleaningMethods(object)
+		playerObjs[object] = nil
+		object, clean = next(playerObjs)
 	end
 
 	self._players[userId] = {}
