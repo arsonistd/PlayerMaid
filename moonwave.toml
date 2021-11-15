@@ -1,5 +1,5 @@
-title = "MyProjectName"  # From Git
-gitRepoUrl = "https://github.com/UpliftGames/moonwave" # From Git
+title = "PlayerMaid"  # From Git
+gitRepoUrl = "https://github.com/arsonistd/PlayerMaid" # From Git
 
 gitSourceBranch = "main"
 changelog = true
@@ -13,9 +13,9 @@ favicon = ""
 # From git:
 organizationName = "ArsonistD"
 projectName = "PlayerMaid"
-url = "https://AuthorName.github.io"
-baseUrl = "/MyProjectName"
-tagline = "Your project's tagline"
+url = "https://arsonistd.github.io"
+baseUrl = "/PlayerMaid"
+tagline = "Player wrapped garbage collector"
 
 [navbar]
 hideableSidebar = true
