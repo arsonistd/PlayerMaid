@@ -15,26 +15,6 @@ local PlayerMaid = {}
 PlayerMaid.__index = PlayerMaid
 
 
-local CleaningMethods = {
-	["function"] = function(funct)
-		funct()
-	end);
-	["Instance"] = function(object)
-		object:Destroy()
-	end);
-	["RBXScriptConnection"] = function(connection)
-		connection:Disconnect()
-	end);
-	["table"] = function(table)
-		for i,v ipairs({"Destroy", "destroy", "disconnect"}) do
-			if table[v] then
-				table[v](table)
-			end
-		end
-	end);
-}
-
-
 --[=[
     Creates a PlayerMaid object.
 
@@ -105,18 +85,40 @@ end
     @within PlayerMaid
     @param player any -- The player that will be in charge of cleaning
     @param object any -- The object that will be cleaned
-	@return index number -- The index of the object
+	@return objectIndex number -- The index of the object
 ]=]
 function PlayerMaid:Add(player: any, obj: any)
-	assert(player ~= nil, "Argument 1 is missing or nil")
-	assert(obj ~= nil, "Argument 2 is missing or nil")
-
-	if obj then
-		local playerContainer = self._players[player.UserId]
-		local index = #playerContainer+1
-		self._players[player.UserId][index] = CleaningMethods[typeof(obj)]
-		return index
+	-- Assert arg 1
+	if player == nil then
+		error("Argument1 is missing or nil")
+	elseif player.Parent ~= game.Players then
+		error("Argument1 is not a player in game")
 	end
+
+	-- Assert arg 2
+	if obj == nil then
+		error("Argument 2 is missing or nil")
+	elseif type(obj) ~= "function" or typeof(obj) ~= "RBXScriptConnection" or obj.Destroy == nil or type(obj) == "table" then
+		error("Argument 2 must be a function, RBXScriptConnection, has a cleanup method or is a table with a destroy method.")
+	elseif type(obj) == "table" then
+		local function checkIfTableHasCleanupMethod(table)
+			for _, cleanupMethod in ipairs({"destroy", "Destroy", "Disconnect"}) do
+				if table[cleanupMethod] then
+					return true
+				end
+			end
+			return false
+		end
+		if checkIfTableHasCleanupMethod(obj) ~= true then
+			error("If argument 2 is a table it must include a cleanup method (destroy, Destroy, Disconnect)")
+		end
+	end
+
+	
+		local playerContainer = self._players[player.UserId]
+		local objectIndex = #playerContainer+1
+		self._players[player.UserId][objectIndex] = obj
+	return objectIndex
 end
 
 
@@ -128,7 +130,12 @@ end
 	@param object any -- The object that will be cleaned on all players
 ]=]--
 function PlayerMaid:Remove(player: any, index)
-						
+	local playerObjs = self._players[player.UserId]
+	local obj = playerObjs[index]
+	if obj then
+		self:_cleanObj(obj)
+		playerObjs[index] = nil
+	end
 end
 
 
@@ -140,8 +147,11 @@ end
 ]=]
 function PlayerMaid:Clean()
 	-- Cleanup every player
-	for userId, playerObjs in pairs(self._players) do
+	local playerContainer = self._players
+	local userId, playerObj = next(playerContainer)
+	while playerObj do
 		self:CleanPlayer(userId)
+		userId, playerObj = next(playerContainer)
 	end
 end
 
@@ -156,11 +166,10 @@ end
 function PlayerMaid:CleanPlayer(userId)
 	local playerObjs = self._players[userId]
 
-	local object, clean = next(playerObjs)
-	while object ~= nil do
-		CleaningMethods(object)
-		playerObjs[object] = nil
-		object, clean = next(playerObjs)
+	local objIndex, obj = next(playerObjs)
+	while obj do
+		self:_cleanObj(obj)
+		objIndex, obj = next(playerObjs)
 	end
 
 	self._players[userId] = {}
@@ -179,6 +188,12 @@ function PlayerMaid:Destroy()
 	self:Clean()
 
 	self._players = {}
+end
+
+
+-- Private functions
+function PlayerMaid:_cleanObj(obj)
+	
 end
 
 return PlayerMaid
