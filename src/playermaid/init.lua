@@ -25,9 +25,11 @@ function PlayerMaid.new(syntax)
 	local self = setmetatable({}, PlayerMaid)
 
 	self._players = {}
-	
-	for _, player in pairs(Players:GetPlayers()) do
-		self._players[player.UserId] = {}
+	local players = Players:GetPlayers()
+	local index, player = next(players)
+	while players do
+		self._players[player.UserId] = {}	
+		index, player = next(players)
 	end
 
 	self._playerAddedConnection = Players.PlayerAdded:Connect(function(player)
@@ -193,6 +195,21 @@ end
 
 -- Private functions
 function PlayerMaid:_cleanObj(obj)
+	if type(obj) == "RBXScriptConnection" then
+		obj:Disconnect()
+	elseif type(obj) == "function" then
+		obj()
+	elseif obj.Destroy then
+		obj:Destroy()
+	elseif type(obj) == "Table" then
+		for _, cleanupMethod in ipairs({"destroy", "Destroy", "Disconnect"}) do
+				if table[cleanupMethod] then
+					table[cleanupMethod]()
+				end
+			end
+		end
+		
+	end
 	
 end
 
