@@ -15,11 +15,14 @@ local PlayerMaid = {}
 PlayerMaid.__index = PlayerMaid
 
 
+
 --[=[
     Creates a PlayerMaid object.
 
     @function new
     @within PlayerMaid
+	@param synax -- Used to other garbage cleaning syntax? Specify which janitor to change method names. (Maid, Janitor, Dumpster)
+	@return playerMaid -- The player maid object
 ]=]
 function PlayerMaid.new(syntax)
 	local self = setmetatable({}, PlayerMaid)
@@ -68,6 +71,7 @@ function PlayerMaid.new(syntax)
 end
 
 
+
 --[=[
     Sets a callback function that will be fired when a player joins
 
@@ -78,6 +82,7 @@ end
 function PlayerMaid:setPlayerAddedCallback(callback)
     self.playerAddedCallback = callback
 end
+
 
 
 --[=[
@@ -96,7 +101,6 @@ function PlayerMaid:Add(player: any, obj: any)
 	elseif player.Parent ~= game.Players then
 		error("Argument1 is not a player in game")
 	end
-
 	-- Assert arg 2
 	if obj == nil then
 		error("Argument 2 is missing or nil")
@@ -115,8 +119,6 @@ function PlayerMaid:Add(player: any, obj: any)
 			error("If argument 2 is a table it must include a cleanup method (destroy, Destroy, Disconnect)")
 		end
 	end
-
-	
 		local playerContainer = self._players[player.UserId]
 		local objectIndex = #playerContainer+1
 		self._players[player.UserId][objectIndex] = obj
@@ -124,14 +126,31 @@ function PlayerMaid:Add(player: any, obj: any)
 end
 
 
+
 --[=[
-	Cleans specific index in the player's 
+	Removes specific index in the player's objects without cleaning.
 				
 	@function Remove
 	@within PlayerMaid
-	@param object any -- The object that will be cleaned on all players
+	@param player any -- The player that you you would like to remove the object from.
+	@param object any -- The object that will be removed.
 ]=]--
 function PlayerMaid:Remove(player: any, index)
+	local playerObjs = self._players[player.UserId]
+	playerObjs[index] = nil
+end
+
+
+
+--[=[
+	Cleans specific index in the player's objects.
+				
+	@function CleanObj
+	@within PlayerMaid
+	@param player any -- The player that you you would like to clean the object from.
+	@param object any -- The object that will be cleaned.
+]=]--
+function PlayerMaid:CleanObj(player: any, index)
 	local playerObjs = self._players[player.UserId]
 	local obj = playerObjs[index]
 	if obj then
@@ -139,6 +158,7 @@ function PlayerMaid:Remove(player: any, index)
 		playerObjs[index] = nil
 	end
 end
+
 
 
 --[=[
@@ -157,6 +177,7 @@ function PlayerMaid:Clean()
 	end
 end
 
+						
 
 --[=[
     Cleans up all the objects on specified player.
@@ -176,6 +197,7 @@ function PlayerMaid:CleanPlayer(userId)
 
 	self._players[userId] = {}
 end
+
 
 --[=[
     Cleans up all the objects on every player, will also disconnect all player adding/removing signals.
@@ -208,9 +230,7 @@ function PlayerMaid:_cleanObj(obj)
 				end
 			end
 		end
-		
 	end
-	
 end
 
 return PlayerMaid
